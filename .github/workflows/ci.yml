@@ -24,8 +24,20 @@ jobs:
         run: |
           go fmt ./...
           if [ -n "$(git status --porcelain)" ]; then
-            echo "Code formatting issues found. Please run 'go fmt ./...' and commit changes."
-            exit 1
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              echo "::error::Code formatting issues found. Please run 'go fmt ./...' and commit changes."
+              exit 1
+            else
+              echo "Automatically fixing formatting issues and committing changes..."
+              git config --local user.email "action@github.com"
+              git config --local user.name "GitHub Action"
+              git add .
+              git commit -m "Auto-format code with go fmt"
+              git push
+              echo "Code formatting issues fixed and changes committed."
+            fi
+          else
+            echo "No formatting issues found."
           fi
 
       - name: Install golangci-lint
