@@ -1,0 +1,22 @@
+# .golangci.yml configuration file for redrip
+# See https://golangci-lint.run/usage/configuration/ for more information
+
+version: "2"
+
+run:
+  timeout: 5m # Timeout for running linters
+  tests: true # Include test files
+  
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - revive
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0 
