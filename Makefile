@@ -1,4 +1,4 @@
-.PHONY: all build fmt lint test clean format act-check act-ci act-release act-test act-build format-fix
+.PHONY: all build fmt lint test clean format act-check act-ci act-release act-test act-build format-fix install-lint
 
 # Default to build
 all: fmt lint test build
@@ -30,9 +30,22 @@ format-fix: format
 		echo "No formatting changes needed."; \
 	fi
 
+# Install golangci-lint v1.54.2 (same as CI)
+install-lint:
+	@echo "Installing golangci-lint v1.54.2..."
+	@if command -v asdf >/dev/null; then \
+		echo "Using asdf to install golangci-lint..."; \
+		asdf install golangci-lint 1.54.2; \
+		asdf local golangci-lint 1.54.2; \
+	else \
+		echo "asdf not found, installing with Go..."; \
+		go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.54.2; \
+	fi
+	@echo "golangci-lint v1.54.2 installed successfully"
+
 # Run linting (after formatting)
 lint: format
-	golangci-lint run --no-config
+	golangci-lint run --timeout=5m ./...
 
 # Run tests
 test:
@@ -54,19 +67,19 @@ clean:
 # GitHub Actions - Check workflow syntax
 act-check:
 	@echo "Checking CI workflow syntax..."
-	act -n -W .github/workflows/ci.yml
+	act -n -W .github/workflows/ci.yml --container-architecture linux/amd64
 	@echo "Checking Release workflow syntax..."
-	act -n -W .github/workflows/release.yml
+	act -n -W .github/workflows/release.yml --container-architecture linux/amd64
 
 # GitHub Actions - Run CI test job locally
 act-test:
 	@echo "Running CI test job locally..."
-	act -j test -W .github/workflows/ci.yml --artifact-server-path /tmp/artifacts
+	act -j test -W .github/workflows/ci.yml --artifact-server-path /tmp/artifacts --container-architecture linux/amd64
 
 # GitHub Actions - Run CI build job locally
 act-build:
 	@echo "Running CI build job locally..."
-	act -j build -W .github/workflows/ci.yml --artifact-server-path /tmp/artifacts
+	act -j build -W .github/workflows/ci.yml --artifact-server-path /tmp/artifacts --container-architecture linux/amd64
 
 # GitHub Actions - Run CI workflow locally (all jobs)
 act-ci: act-test act-build
@@ -75,4 +88,4 @@ act-ci: act-test act-build
 # GitHub Actions - Run Release workflow locally (dry-run)
 act-release:
 	@echo "Running Release workflow locally (dry-run)..."
-	act -n -j build -W .github/workflows/release.yml 
+	act -n -j build -W .github/workflows/release.yml --container-architecture linux/amd64 

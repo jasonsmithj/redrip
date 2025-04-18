@@ -17,7 +17,7 @@ var (
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all Redash queries",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		logger.Info("Starting list command")
 
 		client, err := redash.NewClient()

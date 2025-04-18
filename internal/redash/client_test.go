@@ -168,7 +168,7 @@ func TestGetQuery(t *testing.T) {
 
 func TestGetQueryError(t *testing.T) {
 	// エラーを返すモックサーバーを作成
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		// 500エラーを返す
 		w.WriteHeader(http.StatusInternalServerError)
 		_, err := io.WriteString(w, "Internal Server Error")

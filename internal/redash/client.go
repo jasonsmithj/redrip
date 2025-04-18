@@ -1,3 +1,5 @@
+// Package redash provides functionality for interacting with the Redash API.
+// It handles configuration, authentication, and API calls for retrieving and managing Redash queries.
 package redash
 
 import (
@@ -180,6 +182,8 @@ func GetSQLDir() (string, error) {
 	return config.SQLDir, nil
 }
 
+// Client represents a connection to a Redash instance.
+// It handles API requests and authentication using the configured API key.
 type Client struct {
 	client  *http.Client
 	baseURL string
@@ -217,6 +221,7 @@ func NewClient() (*Client, error) {
 	}, nil
 }
 
+// Query represents a Redash query with its metadata and SQL content.
 type Query struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
@@ -230,6 +235,8 @@ type queryListResponse struct {
 	Count    int     `json:"count"`
 }
 
+// ListQueries retrieves all queries from the Redash instance.
+// It handles pagination automatically to fetch all available queries.
 func (c *Client) ListQueries() ([]Query, error) {
 	logger.Debug("Listing queries")
 
@@ -279,6 +286,8 @@ func (c *Client) ListQueries() ([]Query, error) {
 	return allQueries, nil
 }
 
+// GetQuery retrieves a specific query by its ID from the Redash instance.
+// It returns the query details including the SQL content.
 func (c *Client) GetQuery(id int) (*Query, error) {
 	logger.Debug("Getting query", "id", id, "url", fmt.Sprintf("%s/queries/%d", c.baseURL, id))
 

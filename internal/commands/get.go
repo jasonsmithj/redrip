@@ -15,7 +15,7 @@ var getCmd = &cobra.Command{
 	Use:   "get <query_id>",
 	Args:  cobra.ExactArgs(1),
 	Short: "Get SQL for a specific query and save it as a file",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, args []string) error {
 		logger.Info("Starting get command", "queryID", args[0])
 
 		queryID, err := strconv.Atoi(args[0])

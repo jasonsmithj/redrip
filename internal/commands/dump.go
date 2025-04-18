@@ -1,3 +1,4 @@
+// Package commands implements the command-line interface for the redrip application.
 package commands
 
 import (
@@ -16,7 +17,7 @@ import (
 var dumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "Dump all queries as .sql files",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(_ *cobra.Command, _ []string) error {
 		logger.Info("Starting dump command")
 
 		client, err := redash.NewClient()

@@ -21,7 +21,7 @@ func TestListCommandOutput(t *testing.T) {
 
 	// 簡易的なリストコマンドを作成
 	cmd := &cobra.Command{
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			for _, q := range testQueries {
 				_, err := fmt.Fprintf(cmd.OutOrStdout(), "ID: %d\tName: %s\n", q.id, q.name)
 				if err != nil {

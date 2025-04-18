@@ -16,7 +16,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "redrip",
 	Short: "CLI tool for Redash",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
 		// Set log level based on flags
 		logLevel := slog.LevelWarn // Default to warn level (suppresses INFO)
 
@@ -37,6 +37,7 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+// Execute starts the application and processes command line arguments
 func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
 }

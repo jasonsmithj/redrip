@@ -1,3 +1,4 @@
+// Package main is the entry point for the redrip application.
 package main
 
 import (

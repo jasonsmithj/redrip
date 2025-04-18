@@ -1,3 +1,5 @@
+// Package logger provides a centralized logging system for the redrip application.
+// It uses Go's slog package to provide structured logging with configurable log levels.
 package logger
 
 import (

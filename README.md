@@ -66,6 +66,36 @@ go install github.com/jasonsmithj/redrip@latest
 
 ## Development
 
+### Development Environment Setup
+
+This project uses [asdf](https://asdf-vm.com/) for managing tool versions. The required versions are specified in the `.tool-versions` file.
+
+To set up your development environment:
+
+1. Install asdf if you haven't already:
+   ```bash
+   # On macOS with Homebrew
+   brew install asdf
+   
+   # Follow instructions to add asdf to your shell
+   ```
+
+2. Install the required plugins:
+   ```bash
+   asdf plugin add golang
+   asdf plugin add golangci-lint
+   ```
+
+3. Install the tools at the correct versions:
+   ```bash
+   asdf install
+   ```
+
+4. Verify the installation:
+   ```bash
+   go version # Should show go1.24.2
+   ```
+
 ### Running Tests
 
 To run the tests:
@@ -113,17 +143,13 @@ Before submitting code, you can run the same checks locally that would run in CI
 make fmt        # Format without committing changes
 make format-fix # Format and automatically commit any changes
 
-# Install golangci-lint
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+# Install the same version of golangci-lint used in CI
+make install-lint
 
 # Run linting
-golangci-lint run --timeout=5m
-# or
 make lint
 
 # Run tests with coverage
-go test -race -coverprofile=coverage.txt -covermode=atomic ./...
-# or
 make test-cover
 ```
 
