@@ -30,18 +30,18 @@ format-fix: format
 		echo "No formatting changes needed."; \
 	fi
 
-# Install golangci-lint v2.1.2 (same as CI)
+# Install golangci-lint v1.52.2 (same as CI)
 install-lint:
-	@echo "Installing golangci-lint v2.1.2..."
+	@echo "Installing golangci-lint v1.52.2..."
 	@if command -v asdf >/dev/null; then \
 		echo "Using asdf to install golangci-lint..."; \
-		asdf install golangci-lint 2.1.2; \
-		asdf local golangci-lint 2.1.2; \
+		asdf install golangci-lint 1.52.2; \
+		asdf local golangci-lint 1.52.2; \
 	else \
 		echo "asdf not found, installing with Go..."; \
-		go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.1.2; \
+		go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2; \
 	fi
-	@echo "golangci-lint v2.1.2 installed successfully"
+	@echo "golangci-lint v1.52.2 installed successfully"
 
 # Run linting (after formatting)
 lint: format

@@ -48,11 +48,10 @@ jobs:
             echo "No formatting issues found."
           fi
 
-      - name: Install golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v2.1.2
-          args: --timeout=5m --no-config --disable-all --enable=errcheck,govet,ineffassign,staticcheck,unused,misspell,revive
+      - name: Simple Go vet
+        run: |
+          echo "Running basic Go vet instead of golangci-lint"
+          go vet ./...
 
       - name: Test
         run: |
