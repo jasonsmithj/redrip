@@ -2,10 +2,10 @@ package commands
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strconv"
 
+	"github.com/jasonsmithj/redrip/internal/file"
 	"github.com/jasonsmithj/redrip/internal/logger"
 	"github.com/jasonsmithj/redrip/internal/redash"
 	"github.com/spf13/cobra"
@@ -16,7 +16,7 @@ var getCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Short: "Get SQL for a specific query and save it as a file",
 	RunE: func(_ *cobra.Command, args []string) error {
-		logger.Info("Starting get command", "queryID", args[0])
+		logger.Info("Starting get command", "queryID", args[0], "profile", profile)
 
 		queryID, err := strconv.Atoi(args[0])
 		if err != nil {
@@ -25,7 +25,7 @@ var getCmd = &cobra.Command{
 		}
 		logger.Debug("Parsed query ID", "id", queryID)
 
-		client, err := redash.NewClient()
+		client, err := redash.NewClientWithProfile(profile)
 		if err != nil {
 			logger.Error("Failed to initialize Redash client", "error", err)
 			return fmt.Errorf("failed to initialize Redash client: %v", err)
@@ -35,12 +35,13 @@ var getCmd = &cobra.Command{
 		query, err := client.GetQuery(queryID)
 		if err != nil {
 			logger.Error("Failed to get query", "id", queryID, "error", err)
+			redash.PrintCommonErrorSuggestions(err)
 			return err
 		}
 		logger.Info("Retrieved query from Redash", "id", query.ID, "name", query.Name)
 
 		// Get configured SQL directory
-		sqlDir, err := redash.GetSQLDir()
+		sqlDir, err := redash.GetProfileSQLDir(profile)
 		if err != nil {
 			logger.Error("Failed to get SQL directory", "error", err)
 			return fmt.Errorf("failed to get SQL directory: %v", err)
@@ -52,19 +53,15 @@ var getCmd = &cobra.Command{
 		filePath := filepath.Join(sqlDir, filename)
 		logger.Debug("File path", "path", filePath)
 
-		// Create directory if it doesn't exist
-		if err := os.MkdirAll(sqlDir, 0755); err != nil {
-			logger.Error("Failed to create directory", "dir", sqlDir, "error", err)
-			return fmt.Errorf("failed to create directory %s: %v", sqlDir, err)
-		}
-
+		// Write query to file
 		logger.Debug("Writing query to file", "file", filePath)
-		if err := os.WriteFile(filePath, []byte(query.Query), 0644); err != nil {
+		if err := file.WriteFile(filePath, []byte(query.Query), 0644); err != nil {
 			logger.Error("Failed to write file", "file", filePath, "error", err)
-			return err
+			return fmt.Errorf("failed to write file: %v", err)
 		}
 
-		logger.Info("Query saved successfully", "id", query.ID, "file", filePath)
+		logger.Info("Query saved to file", "file", filePath)
+		fmt.Printf("Query %d (%s) saved to %s\n", query.ID, query.Name, filePath)
 		return nil
 	},
 }

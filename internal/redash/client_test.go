@@ -32,14 +32,16 @@ sql_dir = /tmp/sql`
 	}
 
 	// 結果の検証
-	if config.RedashURL != "https://test-redash.com/api" {
-		t.Errorf("Expected RedashURL = %s, got %s", "https://test-redash.com/api", config.RedashURL)
+	// リファクタリング後は直接アクセスではなくプロファイル経由でアクセスする
+	defaultProfile := config.Profiles["default"]
+	if defaultProfile.RedashURL != "https://test-redash.com/api" {
+		t.Errorf("Expected RedashURL = %s, got %s", "https://test-redash.com/api", defaultProfile.RedashURL)
 	}
-	if config.APIKey != "test-api-key" {
-		t.Errorf("Expected APIKey = %s, got %s", "test-api-key", config.APIKey)
+	if defaultProfile.APIKey != "test-api-key" {
+		t.Errorf("Expected APIKey = %s, got %s", "test-api-key", defaultProfile.APIKey)
 	}
-	if config.SQLDir != "/tmp/sql" {
-		t.Errorf("Expected SQLDir = %s, got %s", "/tmp/sql", config.SQLDir)
+	if defaultProfile.SQLDir != "/tmp/sql" {
+		t.Errorf("Expected SQLDir = %s, got %s", "/tmp/sql", defaultProfile.SQLDir)
 	}
 }
 
@@ -56,9 +58,17 @@ func TestLoadConfigMissingRequired(t *testing.T) {
 	}
 
 	// テスト実行
-	_, err := LoadConfig(configPath)
+	config, err := LoadConfig(configPath)
+	// LoadConfigはエラーを返さないが、その後のValidateProfileConfigでエラーになるはず
+	if err != nil {
+		t.Fatalf("LoadConfig returned unexpected error: %v", err)
+	}
+
+	// デフォルトプロファイルを取得して検証
+	profileConfig := GetProfileConfig(config, "default")
+	err = ValidateProfileConfig(profileConfig)
 	if err == nil {
-		t.Error("LoadConfig should return error when required values are missing")
+		t.Error("ValidateProfileConfig should return error when required values are missing")
 	}
 }
 
@@ -256,11 +266,27 @@ sql_dir = /tmp/sql
 	}
 
 	// テスト実行
-	_, err := LoadConfig(configPath)
+	config, err := LoadConfig(configPath)
+	// LoadConfigはエラーを返さないはず
+	if err != nil {
+		t.Fatalf("LoadConfig returned unexpected error: %v", err)
+	}
 
-	// エラーが返されることを確認
+	// デフォルトプロファイルを取得して検証
+	profileConfig := GetProfileConfig(config, "default")
+
+	// フィールドが空になっていることを確認
+	if profileConfig.RedashURL != "" {
+		t.Errorf("Expected empty RedashURL, got: %s", profileConfig.RedashURL)
+	}
+	if profileConfig.APIKey != "" {
+		t.Errorf("Expected empty APIKey, got: %s", profileConfig.APIKey)
+	}
+
+	// 検証してエラーが返されることを確認
+	err = ValidateProfileConfig(profileConfig)
 	if err == nil {
-		t.Error("LoadConfig should return error when values are empty")
+		t.Error("ValidateProfileConfig should return error when values are empty")
 	}
 
 	// エラーメッセージに期待する情報が含まれていることを確認

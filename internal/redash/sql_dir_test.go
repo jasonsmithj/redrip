@@ -10,20 +10,26 @@ import (
 func GetSQLDirWithConfigPath(configPath string) (string, error) {
 	config, err := LoadConfig(configPath)
 	if err != nil {
+		// 設定ファイルが読み込めない場合はエラーを返す
 		return "", err
 	}
 
+	// デフォルトプロファイルを取得
+	profileConfig := GetProfileConfig(config, "default")
+
+	// ValidateProfileConfig は実行しない（テスト用なので）
+
 	// SQLDirが設定されていない場合はカレントディレクトリを使用
-	if config.SQLDir == "" {
+	if profileConfig.SQLDir == "" {
 		return ".", nil
 	}
 
 	// ディレクトリが存在するか確認
-	if _, err := os.Stat(config.SQLDir); os.IsNotExist(err) {
+	if _, err := os.Stat(profileConfig.SQLDir); os.IsNotExist(err) {
 		return ".", nil
 	}
 
-	return config.SQLDir, nil
+	return profileConfig.SQLDir, nil
 }
 
 func TestGetSQLDirWithConfig(t *testing.T) {
