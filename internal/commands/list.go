@@ -18,9 +18,9 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all Redash queries",
 	RunE: func(_ *cobra.Command, _ []string) error {
-		logger.Info("Starting list command")
+		logger.Info("Starting list command", "profile", profile)
 
-		client, err := redash.NewClient()
+		client, err := redash.NewClientWithProfile(profile)
 		if err != nil {
 			logger.Error("Failed to initialize Redash client", "error", err)
 			return fmt.Errorf("failed to initialize Redash client: %v", err)
@@ -30,6 +30,7 @@ var listCmd = &cobra.Command{
 		queries, err := client.ListQueries()
 		if err != nil {
 			logger.Error("Failed to list queries", "error", err)
+			redash.PrintCommonErrorSuggestions(err)
 			return err
 		}
 		logger.Info("Retrieved queries from Redash", "count", len(queries))

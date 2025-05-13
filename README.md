@@ -7,25 +7,47 @@ Redrip is a command-line tool for interacting with Redash queries.
 Redrip uses a configuration file at `~/.redrip/config.conf`. The first time you run the tool, this file will be created automatically with default settings if it doesn't exist.
 
 Configuration file format:
-```
+
+```ini
+# Default profile (used when no profile is specified)
+[default]
 # Redash API URL (required)
 redash_url = https://your-redash-url.com/api
 # Redash API Key (required)
 api_key = YOUR_REDASH_API_KEY
 # Directory to save SQL files (optional)
 sql_dir = /path/to/save/sql/files
+
+# Example staging profile
+[profile stg]
+redash_url = https://redash-staging.example.com/api
+api_key = STAGING_API_KEY
+sql_dir = /path/to/staging/sql/dir
+
+# Example production profile
+[profile prd]
+redash_url = https://redash-production.example.com/api
+api_key = PRODUCTION_API_KEY
+sql_dir = /path/to/production/sql/dir
 ```
 
 Configuration options:
+
 - `redash_url`: The URL of your Redash API (required)
 - `api_key`: Your Redash API key (required)
 - `sql_dir`: Directory to save SQL files (optional, defaults to current directory if not specified or directory doesn't exist)
+
+Multiple profiles allow you to work with different Redash instances. You can:
+
+1. Use the `--profile` flag to specify a profile: `redrip --profile stg list`
+2. Set the `REDRIP_PROFILE` environment variable: `export REDRIP_PROFILE=stg && redrip list`
+3. If neither is specified, the `default` profile is used
 
 If you run the tool without setting the required values in the config file, you'll see error messages guiding you to update the configuration.
 
 ## Usage
 
-```
+```bash
 # List all queries
 redrip list
 
@@ -34,13 +56,34 @@ redrip get <query_id>
 
 # Dump all queries as SQL files
 redrip dump
+
+# Show current configuration settings
+redrip config list
+
+# Compare all local SQL files with Redash queries
+redrip diff all
+
+# Compare all local SQL files with Redash queries (JSON output)
+redrip diff all --output json
+
+# Compare a specific local SQL file with the corresponding Redash query
+redrip diff query <query_id>
+
+# Compare a specific local SQL file with the corresponding Redash query (JSON output)
+redrip diff query <query_id> --output json
+
+# Use a specific profile
+redrip --profile stg list
+
+# Or, using environment variable
+export REDRIP_PROFILE=stg && redrip list
 ```
 
 ### Logging Options
 
 Redrip provides command-line flags to control the verbosity of logging:
 
-```
+```bash
 # Enable verbose logging
 redrip --verbose list
 
@@ -52,6 +95,21 @@ redrip -v list
 redrip -d get 123
 ```
 
+### Output Formats
+
+Several commands support different output formats:
+
+- `list`: Supports `--output json` (default) or `--output text`
+- `diff`: Supports `--output json` or `--output text` (default)
+
+For JSON output, the diff command returns detailed information including:
+
+- Query ID and name
+- Status (MATCH, DIFFERENT, MISSING_IN_REDASH, ERROR)
+- Path to local file
+- Detailed differences when files don't match
+- Summary statistics
+
 ## Installation
 
 ### Pre-built Binaries
@@ -60,7 +118,7 @@ You can download pre-built binaries for your platform from the [Releases](https:
 
 ### Using Go
 
-```
+```bash
 go install github.com/jasonsmithj/redrip@latest
 ```
 
@@ -73,25 +131,29 @@ This project uses [asdf](https://asdf-vm.com/) for managing tool versions. The r
 To set up your development environment:
 
 1. Install asdf if you haven't already:
+
    ```bash
    # On macOS with Homebrew
    brew install asdf
-   
+
    # Follow instructions to add asdf to your shell
    ```
 
 2. Install the required plugins:
+
    ```bash
    asdf plugin add golang
    asdf plugin add golangci-lint
    ```
 
 3. Install the tools at the correct versions:
+
    ```bash
    asdf install
    ```
 
 4. Verify the installation:
+
    ```bash
    go version # Should show go1.24.2
    ```
@@ -100,13 +162,13 @@ To set up your development environment:
 
 To run the tests:
 
-```
+```bash
 go test ./...
 ```
 
 To run tests with race detection and coverage:
 
-```
+```bash
 go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 ```
 
@@ -119,6 +181,7 @@ This project uses GitHub Actions for continuous integration. The CI pipeline:
 3. Generates code coverage reports
 
 The GitHub Actions workflow is defined in `.github/workflows/ci.yml` and runs on:
+
 - Push to the main branch
 - Any pull request targeting the main branch
 

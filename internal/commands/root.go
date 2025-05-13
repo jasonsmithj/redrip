@@ -11,6 +11,7 @@ var (
 	verbose bool
 	debug   bool
 	quiet   bool
+	profile string
 )
 
 var rootCmd = &cobra.Command{
@@ -47,6 +48,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable warning and error logs")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "Enable all logs (debug, info, warning, error)")
 	rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "Suppress all logs except errors")
+	rootCmd.PersistentFlags().StringVarP(&profile, "profile", "p", "", "Use specific configuration profile (default: uses REDRIP_PROFILE env var or 'default' profile)")
 
 	// Make flags mutually exclusive
 	rootCmd.MarkFlagsMutuallyExclusive("verbose", "debug", "quiet")
@@ -54,4 +56,6 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(getCmd)
 	rootCmd.AddCommand(dumpCmd)
+	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(diffCmd)
 }

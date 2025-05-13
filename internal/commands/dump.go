@@ -4,10 +4,10 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/jasonsmithj/redrip/internal/file"
 	"github.com/jasonsmithj/redrip/internal/logger"
 	"github.com/jasonsmithj/redrip/internal/redash"
 
@@ -18,9 +18,9 @@ var dumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "Dump all queries as .sql files",
 	RunE: func(_ *cobra.Command, _ []string) error {
-		logger.Info("Starting dump command")
+		logger.Info("Starting dump command", "profile", profile)
 
-		client, err := redash.NewClient()
+		client, err := redash.NewClientWithProfile(profile)
 		if err != nil {
 			logger.Error("Failed to initialize Redash client", "error", err)
 			return fmt.Errorf("failed to initialize Redash client: %v", err)
@@ -30,12 +30,13 @@ var dumpCmd = &cobra.Command{
 		queries, err := client.ListQueries()
 		if err != nil {
 			logger.Error("Failed to list queries", "error", err)
+			redash.PrintCommonErrorSuggestions(err)
 			return err
 		}
 		logger.Info("Retrieved queries from Redash", "count", len(queries))
 
 		// Get configured SQL directory
-		sqlDir, err := redash.GetSQLDir()
+		sqlDir, err := redash.GetProfileSQLDir(profile)
 		if err != nil {
 			logger.Error("Failed to get SQL directory", "error", err)
 			return fmt.Errorf("failed to get SQL directory: %v", err)
@@ -43,7 +44,7 @@ var dumpCmd = &cobra.Command{
 		logger.Debug("Using SQL directory", "dir", sqlDir)
 
 		// Create directory if it doesn't exist
-		if err := os.MkdirAll(sqlDir, 0755); err != nil {
+		if err := file.EnsureDirectory(sqlDir); err != nil {
 			logger.Error("Failed to create directory", "dir", sqlDir, "error", err)
 			return fmt.Errorf("failed to create directory %s: %v", sqlDir, err)
 		}
@@ -61,9 +62,9 @@ var dumpCmd = &cobra.Command{
 			return fmt.Errorf("failed to marshal queries to JSON: %v", err)
 		}
 
-		if err := os.WriteFile(jsonFilePath, jsonOutput, 0644); err != nil {
+		if err := file.WriteFile(jsonFilePath, jsonOutput, 0644); err != nil {
 			logger.Error("Failed to write JSON file", "file", jsonFilePath, "error", err)
-			return fmt.Errorf("failed to write JSON file %s: %v", jsonFilePath, err)
+			return err
 		}
 		logger.Info("Queries saved to JSON file", "file", jsonFilePath)
 
@@ -74,9 +75,9 @@ var dumpCmd = &cobra.Command{
 			filePath := filepath.Join(sqlDir, filename)
 			logger.Debug("Writing query to file", "id", q.ID, "name", q.Name, "file", filePath)
 
-			if err := os.WriteFile(filePath, []byte(q.Query), 0644); err != nil {
+			if err := file.WriteFile(filePath, []byte(q.Query), 0644); err != nil {
 				logger.Error("Failed to write query to file", "id", q.ID, "file", filePath, "error", err)
-				return err
+				return fmt.Errorf("failed to write query to file: %v", err)
 			}
 		}
 
